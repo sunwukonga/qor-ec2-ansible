@@ -1,0 +1,100 @@
+Here is a full example, with all of the linkages penciled in. Something I sorely needed while I was nutting this out. Context, context, context.    
+
+Ansible config   
+-
+Ansible will automatically load this file if it is in the same directory as your called playbook.   
+
+    ---
+    # File: /path/to/playbook/ansible.cfg
+    [defaults]
+    inventory   = /path/to/playbook/hosts.ini
+Hosts file
+-
+This file defines host groups. In this example, only the `local` group is important.   
+ 
+    ---
+    [local]
+    localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python2
+
+    [ec2]
+    xx.xx.xx.xx ansible_ssh_private_key_file=/path/to/ec2/keys/key.pem
+Playbook to gather ec2 facts about any of my instances with the following attributes:
+-
+
+- in the `ap-southeast-1` region   
+- tagged with `Name: ec2-go`
+
+The playbook.   
+   
+    ---
+    # File: gather.yml
+    - name: Gather remote EC2 facts
+    hosts: local
+    connection: local
+    gather_facts: False
+
+    # Necessary variables for fact gathering
+    vars:
+      params:
+        region:           ap-southeast-1
+
+    tasks:
+      - name: Gather EC2 facts.
+        ec2_remote_facts:
+          aws_secret_key: "{{ secret_access_key }}"
+          aws_access_key: "{{ access_key_id }}"
+          region: "{{ params['region'] }}"
+          filters:
+            "tag:Name": ec2-go
+        register: ec2_facts
+
+      - name: Print the id of the first instance tagged with "Name: ec2-go"
+        debug:
+          msg: "{{ ec2_facts['instances'][0]['id'] }}"
+
+      - name: Print ALL of the ec2_facts
+        debug:
+          msg: "{{ ec2_facts }}"
+Now for the Ansible Vault MAGIC that arises from the following directory structure
+-
+    /path/to/playbook
+      /group_vars
+        /local
+          vars
+          vault
+Guess what? I made no effort to access any of these files with `vars_files` in my playbook, that's the MAGIC! When my playbook is addressing the host group `[local]`, ansible automatically accesses the `/path/to/playbook/group_vars/local` directory and loads the `vars` AND the encrypted `vault` file if we reference an encrypted var (we'll get to that right now).
+Vars 
+-
+Notice that we automatically access the encrypted vault file by prepending bare vars with `vault_`. No further action required to link these up. It is idiomatic (best practice) to keep the var names the same, i.e. `myVar` --> `vault_myVar`. The advantage of all this dancing around is that it makes variable names visible (think `grep`), rather than hidden within an encrpyted file.    
+
+    ---
+    # File: /path/to/playbook/group_vars/local/vars
+    access_key_id: AKIAS_YOUR_MUM_MQTFHA
+    secret_access_key: "{{ vault_secret_access_key }}"
+
+Vault (unencrpyted)
+-
+We encrypt this file with `ansible-vault encrypt vault` and a password. We decrypt with `ansible-vault decrypt vault` or more safely, just edit without decryption with `ansible-vault edit vault`:   
+
+    ---
+    # File: /path/to/playbook/group_vars/local/vault
+    vault_secret_access_key: youShOuLDnOTtRUstEVEryThInGYoUrEAdOniNtErnET
+
+Vault (encrypted)
+-
+$ANSIBLE_VAULT;1.1;AES256
+36613032373533636330363539653565343463333135633564303036653732616435663462306637
+6363383237386461613338626362653465343636366264610a623537393937646635366638393362
+65353235653166396565333231336332666135663239386162633862356534393066383265333466
+6465373962326662350a613339343234376564373662316234653364386337323130663039313239
+35353031393437333463346132643632323865623963373862303539363162326161396464353031
+39336334346438396161386365653161653231396430646433613132376233666431663863393066
+35343433623563653164353730386339316366656666306265353931393337363937376632396332
+32333164393534366337663333626566366134373766373137336366366230613763333939633165
+35383432666233656363316630643031366431656261386531326162343035393739653366353462
+3930356637616130373033333266393639666233666362313935   
+Run the playbook:
+-
+You'll need the cmdline argument `-ask-vault-pass` because of that ONE variable that is referenced from the vault.   
+
+    ansible-playbook gather.yml --ask-vault-pass

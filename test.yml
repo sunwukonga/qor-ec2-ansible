@@ -1,0 +1,70 @@
+---
+  - name: Provision EC2 Instance
+    hosts: local
+    connection: local
+    gather_facts: False
+    tags: provisioning
+
+    # Necessary Variables for creating/provisioning the EC2 Instance
+    vars:
+      params:
+        instance_type:    t2.micro
+        region:           ap-southeast-1
+        image:            ami-1c2e887f
+        user:             ubuntu
+        security_group:   vagrantbox
+        keypair:          sg-ec2-vagrant
+        exact_count:      1
+
+    # Import the encrypted variables of aws secret and access keys.
+    #    vars_files:
+    #  - vars
+
+    # Task that will be used to Launch/Create an EC2 Instance
+    tasks:
+
+      - name: Gather EC2 facts.
+        ec2_remote_facts:
+          aws_secret_key: "{{ secret_access_key }}"
+          aws_access_key: "{{ access_key_id }}"
+          region: "{{ params['region'] }}"
+          filters:
+            "tag:Name": ec2-go
+        register: ec2_facts
+
+      - name: Debug
+        debug:
+          msg: "{{ ec2_facts['instances'][0]['id'] }}"
+
+      - name: Debug
+        debug:
+          msg: "{{ ec2_facts }}"
+
+      - name: Get only running instance IP addresses.
+        debug:
+            msg: "Instance: {{ item.0 }} has IP address: {{ item.1 }}. Testing id: {{ item.2 }}"
+        with_together:
+          - "{{ ec2_facts.instances|selectattr('state', 'equalto', 'stopped')|map(attribute='tags.Name')|list }}"
+          - "{{ ec2_facts.instances|selectattr('state', 'equalto', 'stopped')|map(attribute='private_ip_address')|list }}"
+          - "{{ [0]|map('extract', ec2_facts.instances, 'id')|list }}"
+
+      - name: Debug instance running. 
+        debug:
+          msg: "{{ item }}"
+        with_items:
+          - "{{ [0]|map('extract', ec2_facts.instances, 'state')|list }}"
+        register: running_state
+
+      - name: Use registered variable to make decision
+        debug:
+          msg: "Yes"
+        with_items:
+          - "{{ [0]|map('extract', ec2_facts.instances, 'state')|list }}"
+        when: item == "stopped"
+
+      - name: Use registered variable to make decision
+        debug:
+          msg: "Yes"
+        with_items:
+          - "{{ [0]|map('extract', ec2_facts.instances, 'state')|list }}"
+        when: item == "running"

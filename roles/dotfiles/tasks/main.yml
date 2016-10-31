@@ -1,0 +1,31 @@
+---
+- name: Symlink config files in rc folder
+  file: src=/vagrant/roles/dotfiles/files/{{ item }} dest={{ home }}/{{ item }} state=link
+  with_items:
+    - .bashrc_mods
+    - .bash_aliases
+    - .tmux.conf
+    - .vimrc
+    - .vim
+- name: Create ~/src folder
+  file: dest={{ home }}/src/vim-pathogen state=directory
+- name: Check out pathogen
+  git:
+      repo=https://github.com/tpope/vim-pathogen.git
+      dest={{ home }}/src/vim-pathogen
+      update=yes
+- name: Create ~/.vim/autoload folder
+  file: dest={{ home }}/.vim/autoload state=directory
+- name: Symlink pathogen into ~/.vim/autoload
+  file:
+      src={{ home }}/src/vim-pathogen/autoload/pathogen.vim
+      dest={{ home }}/.vim/autoload/pathogen.vim
+      state=link
+  become: true
+- name: Create empty .bash_aliases_local file
+  shell:
+      echo '# Add local aliases here' > {{ home }}/.bash_aliases_local
+      creates={{ home }}/.bash_aliases_local
+- name: Include .bashrc_mods in .bashrc
+  lineinfile:
+      "dest={{ home }}/.bashrc line='. ~/.bashrc_mods # Include local mods' insertafter=EOF"

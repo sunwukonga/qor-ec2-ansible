@@ -1,0 +1,78 @@
+---
+- name: Install go-specific apt packages
+  become: true
+  apt: name={{ item }} state=latest
+  with_items:
+    - vim-gocomplete
+- name: Download Golang binary distribution
+  get_url:
+      url=https://storage.googleapis.com/golang/{{ go_archive_file }}
+      dest={{ document_root }}/{{ go_archive_file }}
+  become: true
+- name: Create ~/opt folder
+  file:
+      path={{ home }}/opt
+      state=directory
+- name: Unpack the Go binary distribution
+  unarchive:
+      copy=no
+      src={{ document_root }}/{{ go_archive_file }}
+      dest={{ home }}/opt
+      creates={{ home }}/opt/go
+- name: Add go path settings in .bashrc_mods
+  lineinfile: dest={{ home }}/.bashrc_mods line="{{ item }}" insertafter=EOF
+  with_items:
+    - 'export GOROOT={{ go_root }}'
+    - 'export GOPATH={{ go_path }}'
+    - 'export PATH={{ go_root }}/bin:$PATH'
+    - 'export PATH={{ go_path }}/bin:$PATH'
+  become: true
+- name: Create go code folder
+  file:
+    dest={{ go_path }}/src/github.com
+    state=directory
+    recurse=yes
+    owner=ubuntu
+    group=ubuntu
+- name: Configure email for git
+  git_config: name=user.email scope=global value="pauldesmondparker@gmail.com"
+- name: Configure name for git
+  git_config: name=user.name scope=global value="Paul Parker"
+- name: Install some nice go packages
+  command: >
+    go get -u {{ item }} creates={{ go_path }}/src/{{ item }}/README.md
+  environment:
+    GOPATH: "{{ go_path }}"
+    GOROOT: "{{ go_root }}"
+    PATH: "{{ go_root }}/bin:{{ go_path }}/bin:/usr/bin:/bin"
+  with_items:
+    - github.com/nsf/gocode
+    - github.com/justinas/nosurf
+    - github.com/headzoo/surf
+    - bitbucket.org/gotamer/gowatch
+    - github.com/sunwukonga/qor-example
+    - gopkg.in/redis.v3
+    - github.com/bradfitz/gomemcache/memcache
+    - github.com/azumads/faker
+ 
+- name: Check out vim-go
+  git:
+    repo=https://github.com/fatih/vim-go.git
+    dest={{ home }}/src/vim-go
+    update=yes
+    #- name: Check out qor-example
+    #  git:
+    #    repo=https://github.com/sunwukonga/qor-example.git
+    #    dest={{ home }}/code/go/src/github.com/qor/qor-example
+    #    update=yes
+- name: Ensure ~/.vim/bundle exists
+  file:
+    dest={{ home }}/.vim/bundle
+    state=directory
+- name: Symlink vim-go to .vim/bundle
+  file:
+    src={{ home }}/src/vim-go
+    dest={{ home }}/.vim/bundle/vim-go
+    state=link
+  become: true
+# TODO: Add bitbucket.org/gotamer/gowatch for folder watching and running tests!

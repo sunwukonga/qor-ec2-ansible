@@ -1,0 +1,26 @@
+- name: test handlers listen
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  pre_tasks:
+    - name: notify some handlers
+      command: echo foo
+      notify:
+        - notify_listen
+  tasks:
+    - meta: flush_handlers
+
+    - name: assert all defined handlers ran without error
+      assert:
+        that:
+        - "notify_listen_ran_1 is defined"
+        - "notify_listen_ran_2 is defined"
+
+  handlers:
+    - set_fact:
+        notify_listen_ran_1: True
+      listen: notify_listen
+
+    - set_fact:
+        notify_listen_ran_2: True
+      listen: notify_listen

@@ -1,0 +1,65 @@
+---
+- hosts: ec2
+  become: true
+  gather_facts: false
+  vars:
+      home: /home/ubuntu
+      document_root: /vagrant
+      os: ubuntu
+      osversioncode: trusty
+  pre_tasks:
+      - name: Rsync document_root
+        synchronize: src=./ dest="{{ document_root }}"
+      - name: Symlink sh to bash rather than dash
+        file: src=/bin/bash dest=/bin/sh state=link force=true
+      - name: Update apt cache and optionally upgrade
+        apt:
+          update_cache=yes
+          cache_valid_time=7200
+          #upgrade=yes # Uncomment this to force full upgrade!
+      - name: Install stuff from Aptitude
+        apt: name={{ item }} state=installed
+        with_items:
+         - git
+         - tig
+         - vim
+         - gdb
+         - cgdb
+         - bash-completion # Not included in the docker image
+         - make
+         - tree
+         - htop
+         - tmux
+         - man-db
+      - name: Test | NPM is installed
+        shell: npm -v
+        register: npm_installed
+        ignore_errors: true
+
+      - name: NodeJS | Prepare for installation
+        raw: "curl -sL https://deb.nodesource.com/setup | sudo bash -"
+        become: true
+        when: npm_installed|failed
+
+      - name: NodeJS | Install NodeJS
+        apt: name=nodejs state=present
+        become: true
+
+      - name: NodeJS | Install build-essentials package
+        apt: name=build-essential state=present
+        become: true
+
+      - name: Install global NodeJS packages
+        npm: name={{item}} global=yes state=present
+        with_items:
+          - grunt
+          - grunt-cli
+          - bower
+          - grunt-cli
+
+  roles:
+      - { role: dotfiles, become: false }
+      - { role: golang, become: false }
+      - { role: mysql, become: false }
+      #- { role: youcompleteme, sudo: false } # Comment out this to save time!!
+      #- { role: mesos, sudo: false }

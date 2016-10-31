@@ -1,0 +1,24 @@
+--- 
+- hosts: local
+  gather_facts: false
+  connection: local
+ 
+  tasks:
+#  - name: create a complete empty file
+#    command: /usr/bin/touch /test/test.conf
+
+      #  - name: create a new file with lineinfile
+      #    local_action:   lineinfile
+      #                    dest="./test.conf"
+      #                    regexp="^"
+      #                    line=""
+      #                    state=present
+      #                    create=True
+                 
+  - name: add a string to the new file
+    local_action:   lineinfile
+                    dest=./test.conf
+                    regexp='^'
+                    line='Hello, World!'
+                    state=present
+ 

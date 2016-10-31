@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='$HOME/code/go/src/github.com/qor/qor-example/vendor'
+let g:netrw_dirhist_2='$HOME/code/go/src/github.com/qor/qor-example/vendor/gopkg.in'
+let g:netrw_dirhist_3='$HOME/code/go/src/github.com/qor/qor-example/vendor/gopkg.in/authboss.v0'
+let g:netrw_dirhist_4='$HOME/code/go/src/github.com/qor/qor-example/app/views/layouts'
+let g:netrw_dirhist_5='$HOME/code/go/src/github.com/sunwukonga/qor-example/app/models'
+let g:netrw_dirhist_6='$HOME/code/go/src/github.com/sunwukonga/qor-example/config/auth'
+let g:netrw_dirhist_7='$HOME/code/go/src/github.com/sunwukonga/qor-example/app/views/qor/assets'
+let g:netrw_dirhist_8='$HOME/code/go/src/github.com/sunwukonga/qor-example/app/views/qor/assets/stylesheets'

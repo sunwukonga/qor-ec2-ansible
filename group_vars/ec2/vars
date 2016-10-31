@@ -1,0 +1,26 @@
+---
+
+######################################################################
+# Git settings
+######################################################################
+
+git_name: "sunwukonga"
+git_email: "pauldesmondparker@gmail.com"
+
+######################################################################
+# MySQL Settings
+######################################################################
+
+mysql_port: 3306
+mysql_root_password: "{{ vault_mysql_root_password }}"
+server_hostname: vagrant
+dbuser: user
+dbpass: "{{ vault_dbpass }}"
+
+######################################################################
+# MySQL my.cnf settings
+######################################################################
+
+mysql_max_allowed_packet: 128M
+mysql_character_set_server: utf8mb4
+mysql_collation_server: utf8mb4_unicode_ci

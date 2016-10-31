@@ -1,0 +1,54 @@
+---
+  - name: Restart the EC2-go Instance
+    hosts: local
+    connection: local
+    gather_facts: False
+    tags: restarting
+
+    tasks:
+
+      - name: Gather EC2 facts.
+        ec2_remote_facts:
+          aws_secret_key: "{{ secret_access_key }}"
+          aws_access_key: "{{ access_key_id }}"
+          region: "{{ region }}"
+          filters:
+            "tag:Name": ec2-go
+        register: ec2_facts
+
+      - name: Restart stopped EC2-go Instance
+        local_action:
+          module: ec2
+          aws_access_key: "{{ access_key_id }}"
+          aws_secret_key: "{{ secret_access_key }}"
+          group: "{{ security_group }}"
+          instance_ids: "{{ item.1 }}"
+          region: "{{ region }}"
+          state: running
+          wait: true
+        register: ec2_result
+        notify:
+          - Add the newly created EC2-go instance to the ec2 host group
+          - Wait for SSH to come up
+        with_together:
+          - "{{ [0] | map('extract', (ec2_facts.instances | default([{'state': 'undefined'}], true)), 'state') | list }}"
+          - "{{ [0] | map('extract', (ec2_facts.instances | default([{'id': 'x-12345'}], true)), 'id') | list }}"
+        when: (ec2_facts.instances | length > 0) and (item.0 == "stopped")
+
+    handlers:
+
+      - name: Add the newly created EC2-go instance to the ec2 host group
+        local_action: lineinfile
+          dest="./hosts.ini"
+          regexp="{{ item.public_ip }}"
+          insertafter="[ec2]"
+          line="{{ item.public_ip }} ansible_ssh_private_key_file=/home/spendless/.ec2/{{params['keypair']}}.pem ansible_ssh_user=ubuntu"
+          state=present
+        with_items: "{{ ec2_result.results.0.instances | list | default({}) }}"
+
+      - name: Wait for SSH to come up
+        local_action: wait_for
+          host={{ item.public_ip }}
+          port=22
+          state=started
+        with_items: "{{ ec2_result.results.0.instances | list | default({}) }}"
