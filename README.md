@@ -1,7 +1,8 @@
 Ansible spin up of AWS/EC2 instance with go environment, qor installed (Single Instance)
-
-Contents
-
+The playbook.yml file and much of the roles/ directory originally came from https://github.com/samuell/devbox-golang.git
+###############################################################################
+# Contents
+###############################################################################
     README.md:      The file you're currently reading.
     launch.yml:     Start ec2-go instance from scratch.
     halt.yml:       Stop ec2-go instance.
@@ -48,12 +49,12 @@ Contents
         youcompleteme/
             tasks/
                 main.yml:
-
-Instructions
-
+###############################################################################
+# Instructions
+###############################################################################
 These instructions assume that you have an AWS account, that you know your AWS access key ID and secret access key, and that you have a valid SSH keypair configured in your AWS account.
 
-1. Edit group_vars/local/vars and replace the variable values with appropriate ones:
+_1. Edit group_vars/local/vars and replace the variable values with appropriate ones:
 
 ###############################################################################
 ### Access to AWS. Needed by ec2_remote_facts and ec2 modules.
@@ -73,19 +74,19 @@ user:             ubuntu
 security_group:   vagrantbox
 keypair:          sg-ec2-vagrant
 
-2. Run ansible-vault edit group_vars/local/vault from your playbook root to edit your AWS_SECRET_ACCESS_KEY.
+_2. Run ansible-vault edit group_vars/local/vault from your playbook root to edit your AWS_SECRET_ACCESS_KEY.
 
-3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
+_3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
 
 ######################################################################
-# Git settings
+### Git settings
 ######################################################################
 
 git_name: "sunwukonga"
 git_email: "pauldesmondparker@gmail.com"
 
 ######################################################################
-# MySQL Settings
+### MySQL Settings
 ######################################################################
 
 mysql_port: 3306
@@ -95,12 +96,12 @@ dbuser: user
 dbpass: "{{ vault_dbpass }}"
 
 ######################################################################
-# MySQL my.cnf settings
+### MySQL my.cnf settings
 ######################################################################
 
 mysql_max_allowed_packet: 128M
 mysql_character_set_server: utf8mb4
 mysql_collation_server: utf8mb4_unicode_ci
 
-4. Run ansible-vault edit group_vars/ec2/vault from your playbook root to edit database passwords.
+_4. Run ansible-vault edit group_vars/ec2/vault from your playbook root to edit database passwords.
 
