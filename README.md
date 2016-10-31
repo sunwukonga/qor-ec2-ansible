@@ -54,54 +54,34 @@ The playbook.yml file and much of the roles/ directory originally came from http
 ###############################################################################
 These instructions assume that you have an AWS account, that you know your AWS access key ID and secret access key, and that you have a valid SSH keypair configured in your AWS account.
 
-_1. Edit group_vars/local/vars and replace the variable values with appropriate ones:
+1. Edit group_vars/local/vars and replace the variable values with appropriate ones:
 
-###############################################################################
-### Access to AWS. Needed by ec2_remote_facts and ec2 modules.
-###############################################################################
+    ###############################################################################
+    ### Access to AWS. Needed by ec2_remote_facts and ec2 modules.
+    ###############################################################################
+    
+    access_key_id: AKIAI7PTRVXWCMQ7TFHA
+    secret_access_key: "{{ vault_secret_access_key }}"
+    
+    ###############################################################################
+    ### EC2 specific parameters, region, security group, keyname, etc.
+    ###############################################################################
+    
+    instance_type:    t2.micro
+    region:           ap-southeast-1
+    image:            ami-1c2e887f
+    user:             ubuntu
+    security_group:   vagrantbox
+    keypair:          sg-ec2-vagrant
 
-access_key_id: AKIAI7PTRVXWCMQ7TFHA
-secret_access_key: "{{ vault_secret_access_key }}"
+2. Run `ansible-vault edit group_vars/local/vault` from your playbook root to edit your AWS_SECRET_ACCESS_KEY. Of course, you won't have the password so it'll be best to replace this file with your own. I.e.
 
-###############################################################################
-### EC2 specific parameters, region, security group, keyname, etc.
-###############################################################################
+    ---
+      vault_secret_access_key: YAI8euhEGsEC*SntE*sOT#YOUbetterNOTbelievIT
+Then encrypt it with `ansible-vault encrypt path/to/vault`   
 
-instance_type:    t2.micro
-region:           ap-southeast-1
-image:            ami-1c2e887f
-user:             ubuntu
-security_group:   vagrantbox
-keypair:          sg-ec2-vagrant
+3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
 
-_2. Run ansible-vault edit group_vars/local/vault from your playbook root to edit your AWS_SECRET_ACCESS_KEY.
+4. Repeat step 2 for this vault file. 
 
-_3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
-
-######################################################################
-### Git settings
-######################################################################
-
-git_name: "sunwukonga"
-git_email: "pauldesmondparker@gmail.com"
-
-######################################################################
-### MySQL Settings
-######################################################################
-
-mysql_port: 3306
-mysql_root_password: "{{ vault_mysql_root_password }}"
-server_hostname: vagrant
-dbuser: user
-dbpass: "{{ vault_dbpass }}"
-
-######################################################################
-### MySQL my.cnf settings
-######################################################################
-
-mysql_max_allowed_packet: 128M
-mysql_character_set_server: utf8mb4
-mysql_collation_server: utf8mb4_unicode_ci
-
-_4. Run ansible-vault edit group_vars/ec2/vault from your playbook root to edit database passwords.
-
+5. Create new instance with `ansible-playbook launch.yml --ask-vault-pass`, destroy it with `ansible-playbook destroy.yml --ask-vault-pass`, etc.
