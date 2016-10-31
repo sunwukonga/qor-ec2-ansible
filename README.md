@@ -60,19 +60,19 @@ These instructions assume that you have an AWS account, that you know your AWS a
     ### Access to AWS. Needed by ec2_remote_facts and ec2 modules.
     ###############################################################################
     
-    access_key_id: AKIAI7PTRVXWCMQ7TFHA
-    secret_access_key: "{{ vault_secret_access_key }}"
+    access_key_id: AKIAI7PTRVXWCMQ7TFHA   
+    secret_access_key: "{{ vault_secret_access_key }}"   
     
     ###############################################################################
     ### EC2 specific parameters, region, security group, keyname, etc.
     ###############################################################################
     
-    instance_type:    t2.micro
-    region:           ap-southeast-1
-    image:            ami-1c2e887f
-    user:             ubuntu
-    security_group:   vagrantbox
-    keypair:          sg-ec2-vagrant
+    instance_type:    t2.micro   
+    region:           ap-southeast-1   
+    image:            ami-1c2e887f   
+    user:             ubuntu   
+    security_group:   vagrantbox   
+    keypair:          sg-ec2-vagrant   
 
 2. Run `ansible-vault edit group_vars/local/vault` from your playbook root to edit your AWS_SECRET_ACCESS_KEY. Of course, you won't have the password so it'll be best to replace this file with your own. I.e.
     ```
