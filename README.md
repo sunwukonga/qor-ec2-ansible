@@ -1,4 +1,4 @@
-Ansible spin up of AWS/EC2 instance with go environment, qor installed (Single Instance)
+Ansible spin up of AWS/EC2 instance with go environment, qor installed.   
 The playbook.yml file and much of the roles/ directory originally came from https://github.com/samuell/devbox-golang.git
 ###############################################################################
 # Contents
