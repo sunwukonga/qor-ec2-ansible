@@ -81,8 +81,8 @@ These instructions assume that you have an AWS account, that you know your AWS a
     ```
 Then encrypt it with `ansible-vault encrypt path/to/vault`   
 
-3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
+3. Edit `group_vars/ec2/vars` and replace the variable values with appropriate ones:
 
-4. Repeat step 2 for this vault file. 
+4. Repeat step 2 for the vault file in `group_vars/ec2/` 
 
 5. Create new instance with `ansible-playbook launch.yml --ask-vault-pass`, destroy it with `ansible-playbook destroy.yml --ask-vault-pass`, etc.
