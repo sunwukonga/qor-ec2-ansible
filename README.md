@@ -75,9 +75,10 @@ These instructions assume that you have an AWS account, that you know your AWS a
     keypair:          sg-ec2-vagrant
 
 2. Run `ansible-vault edit group_vars/local/vault` from your playbook root to edit your AWS_SECRET_ACCESS_KEY. Of course, you won't have the password so it'll be best to replace this file with your own. I.e.
-
+    ```
     ---
       vault_secret_access_key: YAI8euhEGsEC*SntE*sOT#YOUbetterNOTbelievIT
+    ```
 Then encrypt it with `ansible-vault encrypt path/to/vault`   
 
 3. Edit group_vars/ec2/vars and replace the variable values with appropriate ones:
