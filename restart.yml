@@ -42,7 +42,7 @@
           dest="./hosts.ini"
           regexp="{{ item.public_ip }}"
           insertafter="[ec2]"
-          line="{{ item.public_ip }} ansible_ssh_private_key_file=/home/spendless/.ec2/{{params['keypair']}}.pem ansible_ssh_user=ubuntu"
+          line="{{ item.public_ip }} ansible_ssh_private_key_file=/home/spendless/.ec2/{{ keypair }}.pem ansible_ssh_user=ubuntu"
           state=present
         with_items: "{{ ec2_result.results.0.instances | list | default({}) }}"
 
