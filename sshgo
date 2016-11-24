@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ec2ip=$(grep -A1 -e "\[ec2\]" hosts.ini | grep -o -e "[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}")
+
+ssh -i ~/.ec2/sg-ec2-vagrant.pem ubuntu@$ec2ip
